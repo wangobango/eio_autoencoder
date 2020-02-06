@@ -6,10 +6,11 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 import torchvision
+import pickle
 from model import ConvAutoencoder, ConvNet
 
 
-cifar_dataset = dataset_loader.CIFAR10('data/')
+cifar_dataset = dataset_loader.CIFAR10('data/', download=True)
 cifar_dataset = cifar_dataset.data
 
 # Creating input and output data
@@ -42,7 +43,7 @@ y_train = y_train/255
 y_test = y_test/255
 
 learning_rate = 0.0001
-epochs = 100
+epochs = 1
 criterion = torch.nn.MSELoss()
 
 net = ConvNet(batch_size)
@@ -56,6 +57,8 @@ for e in range(epochs):  # loop over the dataset multiple times
     train_loss = 0.0
     test_loss = 0.0
     
+    print("Epoch: {}".format(e))
+
     for batch, train_data in enumerate(x_train):
         
         # get the inputs
@@ -77,8 +80,12 @@ for e in range(epochs):  # loop over the dataset multiple times
             model_op = net(ip_test)
             loss_test = criterion(model_op, op_test)
             test_loss += loss_test.item()
+            print('\rEPOCH: {} | Train_loss: {} | Test_loss: {}'.format(e, train_loss, test_loss), end='')
     
     train_loss_container.append(train_loss)
     test_loss_container.append(test_loss)
     print('\rEPOCH: {} | Train_loss: {} | Test_loss: {}'.format(e, train_loss, test_loss), end='')
 print('\nFinished Training')
+
+with open('model.pickl', 'wb') as f:
+    pickle.dump(net, f)
